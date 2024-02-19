@@ -4,18 +4,54 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE;
 exports.handler = async (event) => {
     // Parse the input parameters from the event body
-    const { minNumberOfPlayers, maxNumberOfPlayers, buyIn } = JSON.parse(event.body);
+    const { minNumberOfPlayers, maxNumberOfPlayers, buyIn, playerId} = JSON.parse(event.body);
 
     // Generate a unique gameId (you can use UUIDs or any other unique identifiers)
     const gameId = `game_${new Date().getTime()}`;
+
+    function floorToEven(value) {
+        let flooredValue = Math.floor(value);
+        if (flooredValue % 2 !== 0) {
+            flooredValue -= 1;
+        }
+        return flooredValue;
+    }
+
+    const bigBlind = floorToEven(buyIn/100);
 
     const newGameSession = {
         gameId,
         minPlayers: minNumberOfPlayers,
         maxPlayers: maxNumberOfPlayers,
+        playerCount: 1,
+        pot: 0,
+        communityCards: [],
+        currentTurn: 0,
+        gameStage: 'preDealing',
         buyIn,
-        players: [], // Initialize with an empty player list
-        gameStarted: false
+        smallBlindIndex: 0,
+        gameStarted: false,
+        initialBigBlind: bigBlind,
+        highestBet: 0,
+        netWinners: [],
+        minRaiseAmount: bigBlind,
+        bettingStarted: false,
+        players: [{
+            id: playerId,
+            position: 0,
+            name: `Player ${position + 1}`,
+            chips: buyInAmount,
+            bet: buyIn,
+            inHand: true,
+            isReady: false,
+            hand: [],
+            hasActed: false,
+            potContribution: 0,
+            isAllIn: false,
+            amountWon: 0,
+            handDescription: null,
+            bestHand: null,
+        }],
     };
 
     // Define the parameters to insert a new game session into DynamoDB
