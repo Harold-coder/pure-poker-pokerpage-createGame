@@ -39,7 +39,6 @@ exports.handler = async (event) => {
         players: [{
             id: playerId,
             position: 0,
-            name: `Player ${position + 1}`,
             chips: buyIn,
             bet: 0,
             inHand: true,
