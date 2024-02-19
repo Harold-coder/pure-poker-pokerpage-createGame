@@ -33,6 +33,7 @@ exports.handler = async (event) => {
         gameStarted: false,
         initialBigBlind: bigBlind,
         highestBet: 0,
+        deck: null,
         netWinners: [],
         gameInProgress: false,
         minRaiseAmount: bigBlind,
