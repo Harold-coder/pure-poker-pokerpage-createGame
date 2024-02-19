@@ -3,6 +3,9 @@ const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE; // Table for game sessions
 const connectionsTableName = process.env.CONNECTIONS_TABLE; // Table for WebSocket connections
+const apiGatewayManagementApi = new AWS.ApiGatewayManagementApi({
+    endpoint: process.env.WEBSOCKET_ENDPOINT // Set this environment variable to your WebSocket API endpoint.
+});
 
 exports.handler = async (event) => {
     const connectionId = event.requestContext.connectionId; // Get connectionId from the WebSocket connection
@@ -64,6 +67,15 @@ exports.handler = async (event) => {
             ExpressionAttributeValues: { ':gameId': gameId },
         };
         await dynamoDb.update(updateParams).promise();
+
+        await apiGatewayManagementApi.postToConnection({
+            ConnectionId: connectionId,
+            Data: JSON.stringify({
+                message: 'Game session created successfully',
+                gameId: gameId,
+                gameDetails: newGameSession
+            })
+        }).promise();
 
         return {
             statusCode: 200,
