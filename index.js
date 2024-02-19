@@ -1,24 +1,21 @@
 // Create Game
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-const tableName = process.env.GAME_TABLE;
-exports.handler = async (event) => {
-    // Parse the input parameters from the event body
-    const { minNumberOfPlayers, maxNumberOfPlayers, buyIn, playerId} = JSON.parse(event.body);
+const tableName = process.env.GAME_TABLE; // Table for game sessions
+const connectionsTableName = process.env.CONNECTIONS_TABLE; // Table for WebSocket connections
 
-    // Generate a unique gameId (you can use UUIDs or any other unique identifiers)
+exports.handler = async (event) => {
+    const connectionId = event.requestContext.connectionId; // Get connectionId from the WebSocket connection
+    const { minNumberOfPlayers, maxNumberOfPlayers, buyIn, playerId } = JSON.parse(event.body);
+
+    // Generate a unique gameId
     const gameId = `game_${new Date().getTime()}`;
 
-    function floorToEven(value) {
-        let flooredValue = Math.floor(value);
-        if (flooredValue % 2 !== 0) {
-            flooredValue -= 1;
-        }
-        return flooredValue;
-    }
+    // Function to floor to the nearest even number
+    const floorToEven = (value) => Math.floor(value / 2) * 2;
+    const bigBlind = floorToEven(buyIn / 100);
 
-    const bigBlind = floorToEven(buyIn/100);
-
+    // Original newGameSession object as you provided
     const newGameSession = {
         gameId,
         minPlayers: minNumberOfPlayers,
@@ -32,8 +29,8 @@ exports.handler = async (event) => {
         smallBlindIndex: 0,
         gameStarted: false,
         initialBigBlind: bigBlind,
-        highestBet: 0,
-        deck: null,
+        highestBet: 0, // Keeping this as 0 as per your original variable
+        deck: null, // Assuming a placeholder for a deck object
         netWinners: [],
         gameInProgress: false,
         minRaiseAmount: bigBlind,
@@ -55,24 +52,28 @@ exports.handler = async (event) => {
         }],
     };
 
-    // Define the parameters to insert a new game session into DynamoDB
-    const params = {
-        TableName: tableName, 
-        Item: newGameSession
-    };
-
     try {
-    // Use the DynamoDB document client to put the new game session item
-    await dynamoDb.put(params).promise();
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ gameId, message: "Game session created successfully" })
-    };
+        // Save the new game session to DynamoDB
+        await dynamoDb.put({ TableName: tableName, Item: newGameSession }).promise();
+
+        // Update the connection item with the gameId to link this game creation to the player's WebSocket connection
+        const updateParams = {
+            TableName: connectionsTableName,
+            Key: { connectionId },
+            UpdateExpression: 'SET gameId = :gameId',
+            ExpressionAttributeValues: { ':gameId': gameId },
+        };
+        await dynamoDb.update(updateParams).promise();
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ gameId, message: "Game session created successfully." }),
+        };
     } catch (error) {
-    console.error('Error creating game session:', error);
-    return {
-        statusCode: 500,
-        body: JSON.stringify({ message: "Failed to create game session" })
-    };
+        console.error('Error creating game session:', error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: "Failed to create game session." }),
+        };
     }
 };
