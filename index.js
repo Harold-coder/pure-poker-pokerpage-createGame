@@ -73,7 +73,8 @@ exports.handler = async (event) => {
             Data: JSON.stringify({
                 message: 'Game session created successfully',
                 gameId: gameId,
-                gameDetails: newGameSession
+                gameDetails: newGameSession,
+                statusCode: 200
             })
         }).promise();
 
