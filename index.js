@@ -74,19 +74,20 @@ exports.handler = async (event) => {
                 message: 'Game session created successfully',
                 gameId: gameId,
                 gameDetails: newGameSession,
+                action: 'createGame',
                 statusCode: 200
             })
         }).promise();
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ gameId, message: "Game session created successfully." }),
+            body: JSON.stringify({ gameId, message: "Game session created successfully.", action: 'createGame' }),
         };
     } catch (error) {
         console.error('Error creating game session:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: "Failed to create game session." }),
+            body: JSON.stringify({ message: "Failed to create game session.", action: 'createGame' }),
         };
     }
 };
