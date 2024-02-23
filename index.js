@@ -36,6 +36,7 @@ exports.handler = async (event) => {
         deck: null, // Assuming a placeholder for a deck object
         netWinners: [],
         gameInProgress: false,
+        gameOverTimeStamp: null,
         minRaiseAmount: bigBlind,
         bettingStarted: false,
         players: [{
