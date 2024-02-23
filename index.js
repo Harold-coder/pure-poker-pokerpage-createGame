@@ -64,8 +64,11 @@ exports.handler = async (event) => {
         const updateParams = {
             TableName: connectionsTableName,
             Key: { connectionId },
-            UpdateExpression: 'SET gameId = :gameId',
-            ExpressionAttributeValues: { ':gameId': gameId },
+            UpdateExpression: "set gameId = :g, playerId = :p",
+            ExpressionAttributeValues: {
+                ":g": gameId,
+                ":p": playerId // Assuming playerId is the player's username. Adjust accordingly.
+            },
         };
         await dynamoDb.update(updateParams).promise();
 
