@@ -39,6 +39,7 @@ exports.handler = async (event) => {
         gameOverTimeStamp: null,
         minRaiseAmount: bigBlind,
         bettingStarted: false,
+        waitingPlayers: [],
         players: [{
             id: playerId,
             position: 0,
