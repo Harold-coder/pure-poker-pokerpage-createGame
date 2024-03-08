@@ -1,4 +1,5 @@
 // Create Game
+// rutu
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.GAME_TABLE; // Table for game sessions
