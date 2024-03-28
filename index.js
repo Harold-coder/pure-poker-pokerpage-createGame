@@ -10,14 +10,14 @@ const apiGatewayManagementApi = new AWS.ApiGatewayManagementApi({
 
 exports.handler = async (event) => {
     const connectionId = event.requestContext.connectionId; // Get connectionId from the WebSocket connection
-    const { minNumberOfPlayers, maxNumberOfPlayers, buyIn, playerId } = JSON.parse(event.body);
+    const { minNumberOfPlayers, maxNumberOfPlayers, bigBlind, playerId } = JSON.parse(event.body);
 
     // Generate a unique gameId
-    const gameId = `game_${new Date().getTime()}`;
+    const gameId = `GAME-${Date.now().toString(36)}`;
 
     // Function to floor to the nearest even number
     const floorToEven = (value) => Math.floor(value / 2) * 2;
-    const bigBlind = floorToEven(buyIn / 100);
+    const buyIn = floorToEven(bigBlind * 100);
 
     // Original newGameSession object as you provided
     const newGameSession = {
