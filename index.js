@@ -15,6 +15,8 @@ exports.handler = async (event) => {
     // Generate a unique gameId
     const gameId = `GAME-${Date.now().toString(36)}`;
 
+    bigBlind = int(bigBlind);
+
     // Function to floor to the nearest even number
     const floorToEven = (value) => Math.floor(value / 2) * 2;
     const buyIn = floorToEven(bigBlind * 100);
